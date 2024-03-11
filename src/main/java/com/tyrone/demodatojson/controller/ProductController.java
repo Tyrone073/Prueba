@@ -2,6 +2,7 @@ package com.tyrone.demodatojson.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.tyrone.demodatojson.dto.ProductDto;
+import com.tyrone.demodatojson.dto.ProductDtoForGson;
 import com.tyrone.demodatojson.entity.Product;
 import com.tyrone.demodatojson.service.ProductServiceImpl;
 import jakarta.validation.Valid;
@@ -22,7 +23,7 @@ public class ProductController {
 
 
     @PostMapping("Gson")
-    public ResponseEntity<?> crearProductoGson(@RequestBody ProductDto classDto) {
+    public ResponseEntity<?> crearProductoGson(@RequestBody ProductDtoForGson classDto) {
         return productServiceImpl.create(classDto);
     }
 
@@ -36,8 +37,12 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDto> findById(@PathVariable Long id) {
+    public ResponseEntity<ProductDto> findById(@PathVariable Long id) throws JsonProcessingException {
         return productServiceImpl.findById(id);
+    }
+    @GetMapping("/Gson{id}")
+    public ResponseEntity<ProductDtoForGson> findByIdforGson(@PathVariable Long id) {
+        return productServiceImpl.findByIdforGson(id);
     }
 
     @GetMapping

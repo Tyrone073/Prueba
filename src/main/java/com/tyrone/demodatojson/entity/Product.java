@@ -1,5 +1,6 @@
 package com.tyrone.demodatojson.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import lombok.*;
 

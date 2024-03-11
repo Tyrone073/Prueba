@@ -1,13 +1,14 @@
 package com.tyrone.demodatojson.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.tyrone.demodatojson.dto.ProductDtoForGson;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 
 public interface CrudService1<T,S> {
-    ResponseEntity<String> create(T classDto);
+    ResponseEntity<String> create(ProductDtoForGson classDto); // especifique el dto para probar con el ,metodo de gson
 
     ResponseEntity<String> create1(T classDto) throws JsonProcessingException;
 
@@ -18,5 +19,5 @@ public interface CrudService1<T,S> {
 
     ResponseEntity<Page<S>> getAll(Pageable pageable);
 
-    ResponseEntity<T> findById(Long id);
+    ResponseEntity<T> findById(Long id) throws JsonProcessingException;
 }

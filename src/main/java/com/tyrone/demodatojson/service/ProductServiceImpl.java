@@ -1,17 +1,26 @@
 package com.tyrone.demodatojson.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
 import com.tyrone.demodatojson.dto.ProductDto;
+import com.tyrone.demodatojson.dto.ProductDtoForGson;
 import com.tyrone.demodatojson.entity.Product;
 import com.tyrone.demodatojson.repository.ProductRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.lang.reflect.Type;
+import java.util.Map;
 
 @Service
 public class ProductServiceImpl implements CrudService1<ProductDto, Product> {
@@ -20,17 +29,15 @@ public class ProductServiceImpl implements CrudService1<ProductDto, Product> {
     private ProductRepository productRepository;
 
     @Override
-    public ResponseEntity<String> create(ProductDto productDto) {
+    public ResponseEntity<String> create(ProductDtoForGson productDto) {
         Gson gson = new Gson();
-        Product fromJson = gson.fromJson(productDto.features(), Product.class);
-        // Serializa el objeto Product a JSON
-        String featuresJson = gson.toJson(fromJson);
+        String jsonString = gson.toJson(productDto.features());
         var newProduct = Product.builder()
                 .SKU(productDto.SKU())
                 .description(productDto.description())
                 .price(productDto.price())
                 .stock(productDto.stock())
-                .features(featuresJson)
+                .features(jsonString)
                 .build();
         productRepository.save(newProduct);
         return new ResponseEntity<>("new Product created",HttpStatus.CREATED);
@@ -39,14 +46,14 @@ public class ProductServiceImpl implements CrudService1<ProductDto, Product> {
 
     @Override
     public ResponseEntity<String> create1(ProductDto productDto) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        String featuresJson = mapper.writeValueAsString(productDto.features());
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonString = objectMapper.writeValueAsString(productDto.features());
         Product newProduct = Product.builder()
                 .SKU(productDto.SKU())
                 .description(productDto.description())
                 .price(productDto.price())
                 .stock(productDto.stock())
-                .features(featuresJson)
+                .features(jsonString)
                 .build();
         productRepository.save(newProduct);
 
@@ -61,7 +68,7 @@ public class ProductServiceImpl implements CrudService1<ProductDto, Product> {
                 .description(productDto.description())
                 .price(productDto.price())
                 .stock(productDto.stock())
-                .features(productDto.features())
+                .features(productDto.features().toString())
                 .build();
         productRepository.save(newProduct);
         return new ResponseEntity<>("new Product created",HttpStatus.CREATED);
@@ -109,29 +116,43 @@ public class ProductServiceImpl implements CrudService1<ProductDto, Product> {
     }
 
     @Override
-    public ResponseEntity<ProductDto> findById(Long id) {
+    public ResponseEntity<ProductDto> findById(Long id) throws JsonProcessingException {
         if (id != null && id > 0 && productRepository.existsById(id)) {
             var productReference = productRepository.getReferenceById(id);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonObject stringJson = objectMapper.readValue(productReference.getFeatures(), JsonObject.class);
 
             var productDto = ProductDto.builder()
             .SKU(productReference.getSKU())
             .description(productReference.getDescription())
             .price(productReference.getPrice())
             .stock(productReference.getStock())
+            .features(stringJson)
             .build();
 
             return new ResponseEntity<>(productDto, HttpStatus.OK);
         } else return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-//
-//    @Override
-//    public String toString() {
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        try {
-//            return objectMapper.writeValueAsString();
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//            return null;
-//        }
+    public ResponseEntity<ProductDtoForGson> findByIdforGson(Long id) {
+        if (id != null && id > 0 && productRepository.existsById(id)) {
+            var productReference = productRepository.getReferenceById(id);
+
+            Type mapType = new TypeToken<Map<String, Object>>(){}.getType();
+            Gson gson = new Gson();
+            Map<String, Object> stringJson = gson.fromJson(productReference.getFeatures(),/*Map.class*/  mapType);
+
+            var productDto = ProductDtoForGson.builder()
+                    .SKU(productReference.getSKU())
+                    .description(productReference.getDescription())
+                    .price(productReference.getPrice())
+                    .stock(productReference.getStock())
+                    .features(stringJson)
+                    .build();
+
+            return new ResponseEntity<>(productDto, HttpStatus.OK);
+        } else return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
 }
