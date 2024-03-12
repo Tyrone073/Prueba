@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
 import com.tyrone.demodatojson.dto.ProductDto;
 import com.tyrone.demodatojson.dto.ProductDtoForGson;
 import com.tyrone.demodatojson.entity.Product;
@@ -29,7 +28,7 @@ public class ProductServiceImpl implements CrudService1<ProductDto, Product> {
     private ProductRepository productRepository;
 
     @Override
-    public ResponseEntity<String> create(ProductDtoForGson productDto) {
+    public ResponseEntity<Product> create(ProductDtoForGson productDto) {
         Gson gson = new Gson();
         String jsonString = gson.toJson(productDto.features());
         var newProduct = Product.builder()
@@ -40,12 +39,12 @@ public class ProductServiceImpl implements CrudService1<ProductDto, Product> {
                 .features(jsonString)
                 .build();
         productRepository.save(newProduct);
-        return new ResponseEntity<>("new Product created",HttpStatus.CREATED);
+        return new ResponseEntity<>(newProduct,HttpStatus.CREATED);
     }
 
 
     @Override
-    public ResponseEntity<String> create1(ProductDto productDto) throws JsonProcessingException {
+    public ResponseEntity<Product> create1(ProductDto productDto) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(productDto.features());
         Product newProduct = Product.builder()
@@ -58,11 +57,11 @@ public class ProductServiceImpl implements CrudService1<ProductDto, Product> {
         productRepository.save(newProduct);
 
 
-        return new ResponseEntity<>("new Product created",HttpStatus.CREATED);
+        return new ResponseEntity<>(newProduct ,HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<String> create2(ProductDto productDto) {
+    public ResponseEntity<Product> create2(ProductDto productDto) {
         var newProduct = Product.builder()
                 .SKU(productDto.SKU())
                 .description(productDto.description())
@@ -71,7 +70,8 @@ public class ProductServiceImpl implements CrudService1<ProductDto, Product> {
                 .features(productDto.features().toString())
                 .build();
         productRepository.save(newProduct);
-        return new ResponseEntity<>("new Product created",HttpStatus.CREATED);
+        return new ResponseEntity<>(newProduct,HttpStatus.CREATED);
+//        return null;
     }
 
 
@@ -121,7 +121,7 @@ public class ProductServiceImpl implements CrudService1<ProductDto, Product> {
             var productReference = productRepository.getReferenceById(id);
 
             ObjectMapper objectMapper = new ObjectMapper();
-            JsonObject stringJson = objectMapper.readValue(productReference.getFeatures(), JsonObject.class);
+            JsonNode stringJson = objectMapper.readValue(productReference.getFeatures(), JsonNode.class);
 
             var productDto = ProductDto.builder()
             .SKU(productReference.getSKU())

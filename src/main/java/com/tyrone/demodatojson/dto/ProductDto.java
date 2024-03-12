@@ -16,8 +16,8 @@ public record ProductDto(
         float price,
         int stock,
         @JsonProperty("features")
-        @JsonRawValue // para poder enviar el json sin las " " osea q se envie {} "features": {"1": "..", "2": "..", "otros": ".."}
-        JsonObject features,
+//        @JsonRawValue // para poder enviar el json sin las " " osea q se envie {} "features": {"1": "..", "2": "..", "otros": ".."}
+        JsonNode features,
 //        Map<String, Object> features,
         Category category) {
 }
